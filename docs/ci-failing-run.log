@@ -1,0 +1,50 @@
+2026-10-22T08:41:07.1182340Z Current runner version: '2.319.1'
+2026-10-22T08:41:07.1210980Z ##[group]Operating System
+2026-10-22T08:41:07.1211770Z Ubuntu
+2026-10-22T08:41:07.1212190Z 22.04.5
+2026-10-22T08:41:07.1212570Z LTS
+2026-10-22T08:41:07.1212960Z ##[endgroup]
+2026-10-22T08:41:07.1213410Z ##[group]Runner Image
+2026-10-22T08:41:07.1213900Z Image: ubuntu-22.04
+2026-10-22T08:41:07.1214330Z Version: 20241006.1.0
+2026-10-22T08:41:07.1214770Z ##[endgroup]
+2026-10-22T08:41:09.6620140Z ##[group]Run actions/checkout@v4
+2026-10-22T08:41:09.6620910Z with:
+2026-10-22T08:41:09.6621380Z   repository: kestrel-outfitters/backoffice
+2026-10-22T08:41:09.6621920Z   ref: refs/pull/48/merge
+2026-10-22T08:41:09.6622400Z ##[endgroup]
+2026-10-22T08:41:10.3418230Z Syncing repository: kestrel-outfitters/backoffice
+2026-10-22T08:41:11.8830560Z Checking out the ref
+2026-10-22T08:41:12.0127710Z ##[group]Run actions/setup-dotnet@v4
+2026-10-22T08:41:12.0128390Z with:
+2026-10-22T08:41:12.0128800Z   dotnet-version: 6.0.x
+2026-10-22T08:41:12.0129240Z ##[endgroup]
+2026-10-22T08:41:12.4310870Z Installing .NET Core SDK with version 6.0.428
+2026-10-22T08:41:12.4312260Z /usr/bin/bash /home/runner/work/_actions/actions/setup-dotnet/v4/externals/install-dotnet.sh --skip-non-versioned-files --runtime-id linux-x64 --version 6.0.428
+2026-10-22T08:41:19.8207440Z dotnet-install: Downloaded file size is 190284913 bytes
+2026-10-22T08:41:23.0731180Z dotnet-install: Installed version is 6.0.428
+2026-10-22T08:41:23.0745010Z dotnet-install: Installation finished
+2026-10-22T08:41:23.2284790Z ##[group]Run dotnet restore
+2026-10-22T08:41:23.2285420Z dotnet restore
+2026-10-22T08:41:23.2285900Z shell: /usr/bin/bash -e {0}
+2026-10-22T08:41:23.2286430Z env:
+2026-10-22T08:41:23.2286840Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-22T08:41:23.2287290Z ##[endgroup]
+2026-10-22T08:41:24.1930460Z   Determining projects to restore...
+2026-10-22T08:41:24.9187310Z /usr/share/dotnet/sdk/6.0.428/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.TargetFrameworkInference.targets(144,5): error NETSDK1045: The current .NET SDK does not support targeting .NET 8.0.  Either target .NET 6.0 or lower, or use a version of the .NET SDK that supports .NET 8.0. [/home/runner/work/backoffice/backoffice/backend/Kestrel.Api/Kestrel.Api.csproj]
+2026-10-22T08:41:24.9215650Z /usr/share/dotnet/sdk/6.0.428/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.TargetFrameworkInference.targets(144,5): error NETSDK1045: The current .NET SDK does not support targeting .NET 8.0.  Either target .NET 6.0 or lower, or use a version of the .NET SDK that supports .NET 8.0. [/home/runner/work/backoffice/backoffice/backend/Kestrel.Tests/Kestrel.Tests.csproj]
+2026-10-22T08:41:24.9254110Z ##[error]Process completed with exit code 1.
+2026-10-22T08:41:25.0102290Z Post job cleanup.
+2026-10-22T08:41:25.1488800Z Cleaning up orphan processes
+2026-10-22T08:41:25.4021130Z ##[group]Run actions/setup-node@v4
+2026-10-22T08:41:26.8012450Z with:
+2026-10-22T08:41:26.8013020Z   node-version: 20
+2026-10-22T08:41:26.8013480Z   cache: npm
+2026-10-22T08:41:26.8013950Z   cache-dependency-path: frontend/package-lock.json
+2026-10-22T08:41:28.3901770Z ##[endgroup]
+2026-10-22T08:41:34.2205630Z ##[group]Run npm ci
+2026-10-22T08:41:41.9104520Z added 193 packages, and audited 194 packages in 7s
+2026-10-22T08:41:42.5530410Z ##[group]Run npm run build
+2026-10-22T08:41:46.7712030Z vite v6.0.5 building for production...
+2026-10-22T08:41:48.0004410Z ✓ built in 1.19s
+2026-10-22T08:41:48.2100000Z Post job cleanup.
