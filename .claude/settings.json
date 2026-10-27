@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(git push --force:*)",
+      "Bash(git reset --hard:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|mcp__kestrel__run_query",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/block-destructive.js"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/post-commit-claudemd.js"
+          }
+        ]
+      }
+    ]
+  }
+}
