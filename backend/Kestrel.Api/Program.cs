@@ -45,7 +45,7 @@ builder.Services.AddScoped<IStockFileImportService, StockFileImportService>();
 
 var app = builder.Build();
 
-Database.Migrate(connectionString);
+//Database.Migrate(connectionString);
 
 app.UseExceptionHandler();
 app.UseCors();

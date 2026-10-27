@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "kestrel": {
+      "command": "dotnet",
+      "args": ["run", "--project", "mcp/Kestrel.Mcp", "-c", "Release"],
+      "env": {
+        "KESTREL_MCP_CONNECTION": "${KESTREL_MCP_CONNECTION}"
+      }
+    }
+  }
+}
