@@ -26,6 +26,10 @@ public class CategoriesController : ControllerBase
 
     [HttpPut("{id:int}")]
     public async Task<ActionResult<CategoryDto>> Update(int id, SaveCategoryDto dto) => Ok(await _service.UpdateAsync(id, dto));
+
+    [HttpPut("{id:int}/return-window")]
+    public async Task<ActionResult<CategoryDto>> UpdateReturnWindow(int id, UpdateReturnWindowDto dto) =>
+        Ok(await _service.UpdateReturnWindowAsync(id, dto));
 }
 
 [ApiController]

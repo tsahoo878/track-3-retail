@@ -31,6 +31,7 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IImportRepository, ImportRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
+builder.Services.AddScoped<IReturnRepository, ReturnRepository>();
 
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
@@ -42,6 +43,9 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IStockFileImportService, StockFileImportService>();
+builder.Services.AddScoped<IReturnService, ReturnService>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.Configure<ReturnsOptions>(builder.Configuration.GetSection(ReturnsOptions.SectionName));
 
 var app = builder.Build();
 

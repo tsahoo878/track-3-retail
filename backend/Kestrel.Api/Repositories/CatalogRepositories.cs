@@ -104,8 +104,11 @@ public class StockRepository : IStockRepository
     public Task<StockLevel?> GetAsync(int id) =>
         _db.StockLevels.Include(s => s.Store).Include(s => s.Product).FirstOrDefaultAsync(s => s.Id == id);
 
+    // Takes a row lock (FOR UPDATE) so a read-modify-write of Quantity inside a transaction cannot lose updates.
+    // Outside a transaction (autocommit) the lock is released immediately and this is a plain read.
     public Task<StockLevel?> GetForStoreProductAsync(int storeId, int productId) =>
-        _db.StockLevels.FirstOrDefaultAsync(s => s.StoreId == storeId && s.ProductId == productId);
+        _db.StockLevels.FromSqlInterpolated($"SELECT * FROM stock_levels WHERE store_id = {storeId} AND product_id = {productId} FOR UPDATE")
+            .FirstOrDefaultAsync();
 
     public async Task AddAsync(StockLevel stock) => await _db.StockLevels.AddAsync(stock);
     public Task SaveAsync() => _db.SaveChangesAsync();

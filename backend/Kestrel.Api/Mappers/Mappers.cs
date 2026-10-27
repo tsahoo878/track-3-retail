@@ -5,7 +5,7 @@ namespace Kestrel.Api.Mappers;
 
 public static class CategoryMapper
 {
-    public static CategoryDto ToDto(Category c) => new(c.Id, c.Code, c.Name, c.Department, c.SortOrder);
+    public static CategoryDto ToDto(Category c) => new(c.Id, c.Code, c.Name, c.Department, c.SortOrder, c.ReturnWindowDays);
     public static void Apply(Category c, SaveCategoryDto d)
     {
         c.Code = d.Code.Trim().ToUpperInvariant();

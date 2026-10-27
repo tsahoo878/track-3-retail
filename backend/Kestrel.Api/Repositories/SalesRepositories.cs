@@ -42,6 +42,7 @@ public interface IOrderRepository
 {
     Task<(List<Order> Items, int Total)> SearchAsync(int? storeId, int? customerId, string? status, int page, int pageSize);
     Task<Order?> GetWithDetailsAsync(int id);
+    Task<Order?> GetWithDetailsByNumberAsync(string orderNumber);
     Task<Order?> GetForUpdateAsync(int id);
     Task<int> CountLinesAsync(int orderId);
     Task<int> CountItemsAsync(int orderId);
@@ -76,6 +77,13 @@ public class OrderRepository : IOrderRepository
             .Include(o => o.History)
             .AsSplitQuery()
             .FirstOrDefaultAsync(o => o.Id == id);
+
+    public Task<Order?> GetWithDetailsByNumberAsync(string orderNumber) =>
+        _db.Orders.AsNoTracking()
+            .Include(o => o.Lines).ThenInclude(l => l.Product)
+            .Include(o => o.Payments)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(o => o.OrderNumber == orderNumber);
 
     public Task<Order?> GetForUpdateAsync(int id) =>
         _db.Orders.Include(o => o.Lines).Include(o => o.Payments).Include(o => o.History).AsSplitQuery()

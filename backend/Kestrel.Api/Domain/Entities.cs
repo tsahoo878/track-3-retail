@@ -7,6 +7,7 @@ public class Category
     public string Name { get; set; } = "";
     public string Department { get; set; } = "";
     public int SortOrder { get; set; }
+    public int ReturnWindowDays { get; set; } = 30;
 }
 
 public class Store
@@ -162,4 +163,50 @@ public class ImportError
     public int BatchId { get; set; }
     public int LineNumber { get; set; }
     public string Message { get; set; } = "";
+}
+
+public static class ReturnGrade
+{
+    public const string A = "A";
+    public const string B = "B";
+    public const string C = "C";
+    public const string Scrap = "SCRAP";
+
+    public static readonly string[] All = { A, B, C, Scrap };
+    public static bool IsRestockable(string grade) => grade == A || grade == B;
+}
+
+public static class ReturnStatus
+{
+    public const string Draft = "DRAFT";
+    public const string Approved = "APPROVED";
+    public const string Rejected = "REJECTED";
+}
+
+public class Return
+{
+    public int Id { get; set; }
+    public string RmaNumber { get; set; } = "";
+    public int OrderId { get; set; }
+    public int StoreId { get; set; }
+    public int CustomerId { get; set; }
+    public string Status { get; set; } = ReturnStatus.Draft;
+    public decimal RefundTotal { get; set; }
+    public int CreatedByUserId { get; set; }
+    public int? ApprovedByUserId { get; set; }
+    public DateTime CreatedUtc { get; set; }
+    public DateTime? ApprovedUtc { get; set; }
+    public List<ReturnLine> Lines { get; set; } = new();
+}
+
+public class ReturnLine
+{
+    public int Id { get; set; }
+    public int ReturnId { get; set; }
+    public int OrderLineId { get; set; }
+    public int Quantity { get; set; }
+    public string Grade { get; set; } = ReturnGrade.A;
+    public decimal RefundAmount { get; set; }
+    public bool Restocked { get; set; }
+    public bool SupplierClaim { get; set; }
 }

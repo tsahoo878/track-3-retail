@@ -3,6 +3,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import mysql from "mysql2/promise";
 import { z } from "zod";
+import { validateSql } from "./guard.js";
+import { refundsExceedingPaidQuery, restockBacklogQuery, returnRateQuery, serialReturnersQuery } from "./queries.js";
 
 // stdout carries the MCP protocol, so diagnostics go to stderr.
 const log = (...args) => console.error("[kestrel-mysql-mcp]", ...args);
@@ -11,7 +13,7 @@ const config = {
   host: process.env.MYSQL_HOST ?? "127.0.0.1",
   port: Number(process.env.MYSQL_PORT ?? 3306),
   database: process.env.MYSQL_DATABASE ?? "kestrel",
-  user: process.env.MYSQL_USER ?? "root",
+  user: process.env.MYSQL_USER ?? "kestrel_mcp",
   password: process.env.MYSQL_PASSWORD ?? "",
 };
 
@@ -26,25 +28,6 @@ const pool = mysql.createPool({
 const DEFAULT_MAX_ROWS = 200;
 const HARD_MAX_ROWS = 1000;
 const QUERY_TIMEOUT_MS = 5000;
-const ALLOWED_LEAD = /^(select|with|show|describe|desc|explain)\b/i;
-const FORBIDDEN = /\b(insert|update|delete|replace|drop|alter|create|truncate|grant|revoke|call|load|rename|lock|set|into)\b/i;
-
-// Reject anything that is not a single read-only statement. The READ ONLY
-// transaction below is the real guard; this is an early, readable check.
-function validateSql(sql) {
-  const trimmed = sql.trim().replace(/;\s*$/, "");
-  if (!trimmed) throw new Error("Query is empty.");
-  if (trimmed.includes(";")) throw new Error("Only one statement is allowed.");
-  if (/--|#|\/\*/.test(trimmed)) throw new Error("SQL comments are not allowed.");
-  if (!ALLOWED_LEAD.test(trimmed)) {
-    throw new Error("Only SELECT, WITH, SHOW, DESCRIBE and EXPLAIN statements are allowed.");
-  }
-  if (FORBIDDEN.test(trimmed)) {
-    throw new Error("Statement contains a keyword that is not allowed in read-only mode.");
-  }
-  return trimmed;
-}
-
 // Runs one statement inside a READ ONLY transaction with a row cap and timeout.
 async function runReadOnly(sql, params = [], maxRows = DEFAULT_MAX_ROWS) {
   const cap = Math.min(Math.max(1, maxRows), HARD_MAX_ROWS);
@@ -113,9 +96,64 @@ server.tool(
   },
 );
 
+const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD");
+
+// Shared wrapper for the domain tools: run parameterised SQL and shape the result.
+async function runTool({ sql, params }, maxRows = HARD_MAX_ROWS) {
+  try {
+    return asText(await runReadOnly(sql, params, maxRows));
+  } catch (err) {
+    return asError(`Query failed: ${err.message}`);
+  }
+}
+
 server.tool(
-  "run_query",
-  "Run one read-only SQL statement (SELECT, WITH, SHOW, DESCRIBE, EXPLAIN). Results are capped and time-limited to 5s.",
+  "serial_returners",
+  "Customers flagged as serial returners (BR-08): at least minRmas RMAs across minOrders orders and at least minRatePct percent of purchased value returned, within the last N days. Returns customer_id and loyalty tier only, no names.",
+  {
+    days: z.number().int().min(1).max(730).default(180),
+    minRmas: z.number().int().min(1).max(100).default(3),
+    minOrders: z.number().int().min(1).max(100).default(3),
+    minRatePct: z.number().min(0).max(100).default(40),
+  },
+  async (args) => runTool(serialReturnersQuery(args)),
+);
+
+server.tool(
+  "refunds_exceeding_paid",
+  "Audit (BR-04/BR-05): order lines whose refunds, summed over every RMA, exceed the prorated amount paid, and orders whose refunds exceed captured payments. Should always be empty. Optional from/to (YYYY-MM-DD) limit the audit to orders with an RMA created in that range.",
+  { from: dateString.optional(), to: dateString.optional() },
+  async ({ from, to }) => runTool(refundsExceedingPaidQuery({ from: from ?? null, to: to ?? null })),
+);
+
+server.tool(
+  "return_rate_by_product",
+  "Return rate (returned qty / sold qty) between from and to (YYYY-MM-DD, inclusive), grouped by product (default), category or store, highest rate first. Matches the returns dashboard.",
+  {
+    from: dateString,
+    to: dateString,
+    groupBy: z.enum(["product", "category", "store"]).default("product"),
+    limit: z.number().int().min(1).max(200).default(20),
+  },
+  async ({ from, to, groupBy, limit }) => {
+    if (to < from) return asError("'to' must not be before 'from'.");
+    return runTool(returnRateQuery({ from, to, groupBy, limit }));
+  },
+);
+
+server.tool(
+  "restock_backlog",
+  "Grade A/B lines on APPROVED RMAs that have not been restocked, plus DRAFT RMAs still awaiting approval, with age in hours (BR-07 same-day restock). Optional storeId and olderThanHours (default 0).",
+  {
+    storeId: z.number().int().positive().optional(),
+    olderThanHours: z.number().int().min(0).max(24 * 365).default(0),
+  },
+  async ({ storeId, olderThanHours }) => runTool(restockBacklogQuery({ storeId: storeId ?? null, olderThanHours })),
+);
+
+server.tool(
+  "run_readonly_query",
+  "Run one read-only SELECT or WITH statement over the mcp_* views. Rejects DML, comments, variables, locking reads, non-mcp relations and information_schema. Results are capped and time-limited to 5s.",
   {
     sql: z.string().max(4000).describe("A single read-only SQL statement"),
     maxRows: z.number().int().min(1).max(HARD_MAX_ROWS).optional().describe("Max rows to return (default 200, max 1000)"),
@@ -137,7 +175,10 @@ server.tool(
 );
 
 async function main() {
-  if (!config.password) log("warning: MYSQL_PASSWORD is empty");
+  if (!config.password) {
+    log("fatal: MYSQL_PASSWORD is not set. Use the kestrel_mcp account and never commit its password.");
+    process.exit(1);
+  }
   await server.connect(new StdioServerTransport());
   log(`connected to ${config.user}@${config.host}:${config.port}/${config.database}`);
 }

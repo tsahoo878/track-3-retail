@@ -13,17 +13,20 @@ public interface ICategoryService
     Task<CategoryDto> GetAsync(int id);
     Task<CategoryDto> CreateAsync(SaveCategoryDto dto);
     Task<CategoryDto> UpdateAsync(int id, SaveCategoryDto dto);
+    Task<CategoryDto> UpdateReturnWindowAsync(int id, UpdateReturnWindowDto dto);
 }
 
 public class CategoryService : ICategoryService
 {
     private readonly ICategoryRepository _repo;
     private readonly IValidator<SaveCategoryDto> _validator;
+    private readonly IValidator<UpdateReturnWindowDto> _windowValidator;
 
-    public CategoryService(ICategoryRepository repo, IValidator<SaveCategoryDto> validator)
+    public CategoryService(ICategoryRepository repo, IValidator<SaveCategoryDto> validator, IValidator<UpdateReturnWindowDto> windowValidator)
     {
         _repo = repo;
         _validator = validator;
+        _windowValidator = windowValidator;
     }
 
     public async Task<List<CategoryDto>> ListAsync() => (await _repo.ListAsync()).Select(CategoryMapper.ToDto).ToList();
@@ -51,6 +54,15 @@ public class CategoryService : ICategoryService
         await _validator.ValidateAndThrowAsync(dto);
         var c = await _repo.GetAsync(id) ?? throw new NotFoundException($"Category {id} was not found.");
         CategoryMapper.Apply(c, dto);
+        await _repo.SaveAsync();
+        return CategoryMapper.ToDto(c);
+    }
+
+    public async Task<CategoryDto> UpdateReturnWindowAsync(int id, UpdateReturnWindowDto dto)
+    {
+        await _windowValidator.ValidateAndThrowAsync(dto);
+        var c = await _repo.GetAsync(id) ?? throw new NotFoundException($"Category {id} was not found.");
+        c.ReturnWindowDays = dto.Days;
         await _repo.SaveAsync();
         return CategoryMapper.ToDto(c);
     }

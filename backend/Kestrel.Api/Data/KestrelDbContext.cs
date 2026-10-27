@@ -19,6 +19,8 @@ public class KestrelDbContext : DbContext
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<OrderStatusHistory> OrderStatusHistory => Set<OrderStatusHistory>();
     public DbSet<OrderNote> OrderNotes => Set<OrderNote>();
+    public DbSet<Return> Returns => Set<Return>();
+    public DbSet<ReturnLine> ReturnLines => Set<ReturnLine>();
     public DbSet<ImportBatch> ImportBatches => Set<ImportBatch>();
     public DbSet<ImportError> ImportErrors => Set<ImportError>();
 
@@ -136,6 +138,23 @@ public class KestrelDbContext : DbContext
         {
             e.ToTable("order_notes");
             e.Property(x => x.Note).HasMaxLength(500);
+        });
+
+        b.Entity<Return>(e =>
+        {
+            e.ToTable("returns");
+            e.Property(x => x.RmaNumber).HasMaxLength(24);
+            e.Property(x => x.Status).HasMaxLength(12);
+            e.Property(x => x.RefundTotal).HasPrecision(10, 2);
+            e.HasIndex(x => x.RmaNumber).IsUnique();
+            e.HasMany(x => x.Lines).WithOne().HasForeignKey(x => x.ReturnId);
+        });
+
+        b.Entity<ReturnLine>(e =>
+        {
+            e.ToTable("return_lines");
+            e.Property(x => x.Grade).HasMaxLength(5);
+            e.Property(x => x.RefundAmount).HasPrecision(10, 2);
         });
 
         b.Entity<ImportBatch>(e =>

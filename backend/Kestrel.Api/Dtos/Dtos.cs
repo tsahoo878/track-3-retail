@@ -3,7 +3,7 @@ namespace Kestrel.Api.Dtos;
 public record PagedResult<T>(IReadOnlyList<T> Items, int Total, int Page, int PageSize);
 
 // Categories
-public record CategoryDto(int Id, string Code, string Name, string Department, int SortOrder);
+public record CategoryDto(int Id, string Code, string Name, string Department, int SortOrder, int ReturnWindowDays = 30);
 public record SaveCategoryDto(string Code, string Name, string Department, int SortOrder);
 
 // Products
@@ -58,3 +58,33 @@ public record TopProductDto(int ProductId, string Sku, string Name, int UnitsSol
 public record ImportErrorDto(int LineNumber, string Message);
 public record ImportBatchDto(int Id, string FileName, DateTime StartedUtc, DateTime? FinishedUtc, int TotalLines, int AppliedLines, int RejectedLines, string Status);
 public record ImportBatchDetailDto(int Id, string FileName, DateTime StartedUtc, DateTime? FinishedUtc, int TotalLines, int AppliedLines, int RejectedLines, string Status, IReadOnlyList<ImportErrorDto> Errors);
+
+// Returns and refunds. Desk-facing: customer name and order only, never address, DOB, phone or email.
+public record UpdateReturnWindowDto(int Days);
+
+public record ReturnLineInputDto(int OrderLineId, int Quantity, string Grade);
+public record CreateReturnDto(string OrderNumber, int StoreId, int CreatedByUserId, List<ReturnLineInputDto> Lines);
+public record ApproveReturnDto(int UserId);
+public record RejectReturnDto(int UserId);
+
+public record EligibilityLineDto(int OrderLineId, string Sku, string ProductName, string CategoryCode, int WindowDays,
+    int QuantityOrdered, int QuantityReturned, int ReturnableQuantity,
+    decimal PaidAmount, decimal RefundedAmount, decimal ReturnableAmount,
+    DateOnly ReturnableUntil, bool Eligible, string? Reason);
+
+public record EligibilityDto(int OrderId, string OrderNumber, string OrderStatus, string CustomerName, DateTime OrderedUtc,
+    int OrderStoreId, bool Eligible, string? Reason, DateOnly? ReturnableUntil,
+    decimal CapturedPayments, decimal RefundedTotal, decimal OrderRefundableRemaining,
+    bool SerialReturner, List<EligibilityLineDto> Lines);
+
+public record ReturnLineDto(int Id, int OrderLineId, string Sku, string ProductName, int Quantity, string Grade,
+    decimal RefundAmount, bool Restocked, bool SupplierClaim);
+
+public record ReturnDto(int Id, string RmaNumber, int OrderId, string OrderNumber, string CustomerName, int StoreId, string StoreName,
+    string Status, decimal RefundTotal, bool RequiresManagerApproval, int CreatedByUserId, int? ApprovedByUserId,
+    DateTime CreatedUtc, DateTime? ApprovedUtc, bool SerialReturner, List<ReturnLineDto> Lines);
+
+public record ReturnRateRowDto(string Key, string Label, int SoldQuantity, int ReturnedQuantity, decimal ReturnRatePct, decimal RefundTotal);
+public record FlaggedCustomerDto(int CustomerId, string CustomerName, int RmaCount, int DistinctOrders, decimal ReturnedValue, decimal PurchasedValue, decimal RatePct);
+public record ReturnsDashboardDto(DateOnly From, DateOnly To, List<ReturnRateRowDto> ByProduct, List<ReturnRateRowDto> ByCategory,
+    List<ReturnRateRowDto> ByStore, List<FlaggedCustomerDto> FlaggedCustomers);

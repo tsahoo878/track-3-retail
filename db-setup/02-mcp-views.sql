@@ -6,7 +6,7 @@ CREATE OR REPLACE VIEW mcp_stores AS
   SELECT id, code, name, region, city, is_active FROM stores;
 
 CREATE OR REPLACE VIEW mcp_categories AS
-  SELECT id, code, name, department FROM categories;
+  SELECT id, code, name, department, return_window_days FROM categories;
 
 CREATE OR REPLACE VIEW mcp_products AS
   SELECT id, sku, name, category_id, brand, unit_price, cost_price, is_active FROM products;
@@ -30,3 +30,12 @@ CREATE OR REPLACE VIEW mcp_payments AS
 
 CREATE OR REPLACE VIEW mcp_order_status_history AS
   SELECT id, order_id, from_status, to_status, changed_utc FROM order_status_history;
+
+CREATE OR REPLACE VIEW mcp_returns AS
+  SELECT id, rma_number, order_id, store_id, customer_id, status, refund_total,
+         created_utc, approved_utc
+  FROM returns;
+
+CREATE OR REPLACE VIEW mcp_return_lines AS
+  SELECT id, return_id, order_line_id, quantity, grade, refund_amount, restocked, supplier_claim
+  FROM return_lines;

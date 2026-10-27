@@ -5,6 +5,8 @@ import OrderDetailPage from './pages/OrderDetailPage'
 import StoresPage from './pages/StoresPage'
 import CustomersPage from './pages/CustomersPage'
 import DailySalesPage from './pages/DailySalesPage'
+import RmaDeskPage from './pages/RmaDeskPage'
+import ReturnsDashboardPage from './pages/ReturnsDashboardPage'
 
 export default function App() {
   return (
@@ -17,6 +19,8 @@ export default function App() {
           <NavLink to="/stores">Stores</NavLink>
           <NavLink to="/customers">Customers</NavLink>
           <NavLink to="/reports/daily-sales">Daily sales</NavLink>
+          <NavLink to="/returns/desk">RMA desk</NavLink>
+          <NavLink to="/returns/dashboard">Returns</NavLink>
         </nav>
       </header>
       <main className="content">
@@ -27,6 +31,8 @@ export default function App() {
           <Route path="/stores" element={<StoresPage />} />
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/reports/daily-sales" element={<DailySalesPage />} />
+          <Route path="/returns/desk" element={<RmaDeskPage />} />
+          <Route path="/returns/dashboard" element={<ReturnsDashboardPage />} />
         </Routes>
       </main>
     </div>

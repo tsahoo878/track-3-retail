@@ -1,4 +1,5 @@
 using FluentValidation;
+using Kestrel.Api.Domain;
 using Kestrel.Api.Dtos;
 
 namespace Kestrel.Api.Validators;
@@ -113,4 +114,36 @@ public class CreatePaymentValidator : AbstractValidator<CreatePaymentDto>
         RuleFor(x => x.CardLast4).Matches("^[0-9]{4}$").When(x => x.CardLast4 != null);
         RuleFor(x => x.ProviderRef).MaximumLength(40);
     }
+}
+
+public class UpdateReturnWindowValidator : AbstractValidator<UpdateReturnWindowDto>
+{
+    public UpdateReturnWindowValidator() =>
+        RuleFor(x => x.Days).InclusiveBetween(1, 365).WithMessage("The return window must be between 1 and 365 days.");
+}
+
+public class CreateReturnValidator : AbstractValidator<CreateReturnDto>
+{
+    public CreateReturnValidator()
+    {
+        RuleFor(x => x.OrderNumber).NotEmpty().MaximumLength(20);
+        RuleFor(x => x.StoreId).GreaterThan(0);
+        RuleFor(x => x.CreatedByUserId).GreaterThan(0);
+        RuleFor(x => x.Lines).NotEmpty();
+        RuleFor(x => x.Lines)
+            .Must(l => l == null || l.Select(y => y.OrderLineId).Distinct().Count() == l.Count)
+            .WithMessage("Each order line can appear only once in an RMA.");
+        RuleForEach(x => x.Lines).ChildRules(l =>
+        {
+            l.RuleFor(y => y.OrderLineId).GreaterThan(0);
+            l.RuleFor(y => y.Quantity).InclusiveBetween(1, 1000);
+            l.RuleFor(y => y.Grade).Must(g => g != null && ReturnGrade.All.Contains(g.Trim().ToUpperInvariant()))
+                .WithMessage("Grade must be A, B, C or SCRAP.");
+        });
+    }
+}
+
+public class ApproveReturnValidator : AbstractValidator<ApproveReturnDto>
+{
+    public ApproveReturnValidator() => RuleFor(x => x.UserId).GreaterThan(0);
 }

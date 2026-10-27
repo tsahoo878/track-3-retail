@@ -17,3 +17,10 @@ th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid #e3
 .tag.cancelled { background: #f3d2d2; }
 .tag.paid { background: #d6e4f5; }
 input, select, button { font: inherit; padding: 0.35rem 0.6rem; }
+.banner { padding: 0.75rem 1rem; border-radius: 6px; margin: 1rem 0; border: 1px solid; }
+.banner.warn { background: #fff4d6; border-color: #e9b44c; color: #5c4200; }
+.banner.ok { background: #e3f3e7; border-color: #8cc79b; color: #1f3d2e; }
+.banner.bad { background: #f9e0e0; border-color: #d98c8c; color: #7a1c1c; }
+.row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; margin: 0.75rem 0; }
+.row label { display: flex; flex-direction: column; gap: 0.25rem; }
+.num-input { width: 5rem; }

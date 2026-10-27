@@ -13,4 +13,6 @@ GRANT SELECT ON kestrel.mcp_orders TO 'kestrel_mcp'@'%';
 GRANT SELECT ON kestrel.mcp_order_lines TO 'kestrel_mcp'@'%';
 GRANT SELECT ON kestrel.mcp_payments TO 'kestrel_mcp'@'%';
 GRANT SELECT ON kestrel.mcp_order_status_history TO 'kestrel_mcp'@'%';
+GRANT SELECT ON kestrel.mcp_returns TO 'kestrel_mcp'@'%';
+GRANT SELECT ON kestrel.mcp_return_lines TO 'kestrel_mcp'@'%';
 FLUSH PRIVILEGES;
