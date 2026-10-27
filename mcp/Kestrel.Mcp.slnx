@@ -1,6 +1,0 @@
-<Solution>
-  <Folder Name="/tests/">
-    <Project Path="tests/Kestrel.Mcp.Tests/Kestrel.Mcp.Tests.csproj" />
-  </Folder>
-  <Project Path="Kestrel.Mcp/Kestrel.Mcp.csproj" />
-</Solution>
