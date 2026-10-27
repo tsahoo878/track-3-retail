@@ -1,10 +1,14 @@
 {
   "mcpServers": {
     "kestrel": {
-      "command": "dotnet",
-      "args": ["run", "--project", "mcp/Kestrel.Mcp", "-c", "Release"],
+      "command": "node",
+      "args": ["kestrel-mysql-mcp/src/index.js"],
       "env": {
-        "KESTREL_MCP_CONNECTION": "${KESTREL_MCP_CONNECTION}"
+        "MYSQL_HOST": "127.0.0.1",
+        "MYSQL_PORT": "3306",
+        "MYSQL_DATABASE": "kestrel",
+        "MYSQL_USER": "root",
+        "MYSQL_PASSWORD": "Root123$"
       }
     }
   }
